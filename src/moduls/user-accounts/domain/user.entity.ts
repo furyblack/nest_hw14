@@ -9,7 +9,7 @@ export enum DeletionStatus {
 
 @Schema({ timestamps: true })
 export class User {
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, unique: true })
   login: string;
 
   @Prop({ type: String, required: true })
