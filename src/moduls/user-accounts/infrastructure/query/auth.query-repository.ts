@@ -7,11 +7,11 @@ import { MeViewDto } from '../../api/view-dto/user.view-dto';
 export class AuthQueryRepository {
   constructor(private usersRepository: UsersRepository) {}
 
-  // async me(userId: string): Promise<MeViewDto> {
-  //   const user = await this.usersRepository.findOrNotFoundFail(
-  //     new Types.ObjectId(userId),
-  //   );
-  //
-  //   return MeViewDto.mapToView(user);
-  // }
+  async me(userId: string): Promise<MeViewDto> {
+    const user = await this.usersRepository.findOrNotFoundFail(
+      new Types.ObjectId(userId),
+    );
+
+    return MeViewDto.mapToView(user);
+  }
 }

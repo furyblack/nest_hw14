@@ -24,6 +24,12 @@ export class User {
   @Prop({ enum: DeletionStatus, default: DeletionStatus.NotDeleted })
   deletionStatus: DeletionStatus;
 
+  @Prop({ type: String, default: null }) // Указываем, что может быть строкой или null
+  confirmationCode: string | null;
+
+  @Prop({ type: Date, default: null }) // Указываем, что может быть датой или null
+  confirmationCodeExpiration: Date | null;
+
   static createInstance(dto: CreateUserDomainDto): UserDocument {
     const user = new this();
     user.email = dto.email;
@@ -39,6 +45,11 @@ export class User {
       throw new Error('Entity already deleted');
     }
     this.deletionStatus = DeletionStatus.PermanentDeleted;
+  }
+
+  setConfirmationCode(code: string) {
+    this.confirmationCode = code;
+    this.confirmationCodeExpiration = new Date(Date.now() + 1000 * 60 * 60); // код истекает через 1 час
   }
 }
 
