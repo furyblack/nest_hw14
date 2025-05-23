@@ -1,18 +1,22 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument, UserModelType } from '../domain/user.entity';
-import { Injectable } from '@nestjs/common';
-import { DomainException } from '../../../core/exceptions/domain-exceptions';
-import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
+import {
+  DeletionStatus,
+  User,
+  UserDocument,
+  UserModelType,
+} from '../domain/user.entity';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 
 @Injectable()
 export class UsersRepository {
+  //инжектирование модели через DI
   constructor(@InjectModel(User.name) private UserModel: UserModelType) {}
 
   async findById(id: string): Promise<UserDocument | null> {
     return this.UserModel.findOne({
       _id: id,
-      deletedAt: null,
+      deletionStatus: { $ne: DeletionStatus.PermanentDeleted },
     });
   }
 
@@ -24,20 +28,22 @@ export class UsersRepository {
     const user = await this.findById(id.toString());
 
     if (!user) {
-      throw new DomainException({
-        code: DomainExceptionCode.NotFound,
-        message: 'User not found',
-      });
+      //TODO: replace with domain exception
+      throw new NotFoundException('user not found');
     }
 
     return user;
   }
-
   findByLogin(login: string): Promise<UserDocument | null> {
     return this.UserModel.findOne({ login });
   }
-
+  async findByEmail(email: string) {
+    return this.UserModel.findOne({ email }).exec();
+  }
   async loginIsExist(login: string): Promise<boolean> {
     return !!(await this.UserModel.countDocuments({ login: login }));
+  }
+  async findByConfirmationCode(code: string): Promise<UserDocument | null> {
+    return this.UserModel.findOne({ confirmationCode: code });
   }
 }

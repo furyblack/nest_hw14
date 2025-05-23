@@ -1,9 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Request } from 'express';
-import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { Reflector } from '@nestjs/core';
-
-import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { UnauthorizedDomainException } from '../../../../core/exceptions/domain-exceptions';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorators';
 
 @Injectable()
@@ -17,8 +15,6 @@ export class BasicAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
     const authHeader = request.headers.authorization;
 
-    //https://docs.nestjs.com/security/authentication#enable-authentication-globally
-    // reflection
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -26,12 +22,8 @@ export class BasicAuthGuard implements CanActivate {
     if (isPublic) {
       return true;
     }
-
     if (!authHeader || !authHeader.startsWith('Basic ')) {
-      throw new DomainException({
-        code: DomainExceptionCode.Unauthorized,
-        message: 'unauthorised',
-      });
+      throw UnauthorizedDomainException.create();
     }
 
     const base64Credentials = authHeader.split(' ')[1];
@@ -43,10 +35,7 @@ export class BasicAuthGuard implements CanActivate {
     if (username === this.validUsername && password === this.validPassword) {
       return true;
     } else {
-      throw new DomainException({
-        code: DomainExceptionCode.Unauthorized,
-        message: 'unauthorised',
-      });
+      throw UnauthorizedDomainException.create();
     }
   }
 }

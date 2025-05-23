@@ -7,6 +7,7 @@ import { UsersRepository } from '../infrastructure/users.repository';
 import { Types } from 'mongoose';
 import { CryptoService } from './crypto.service';
 import { EmailService } from '../../notifications/email.service';
+import { BadRequestDomainException } from '../../../core/exceptions/domain-exceptions';
 
 @Injectable()
 export class UsersService {
@@ -20,18 +21,49 @@ export class UsersService {
   ) {}
 
   async createUser(dto: CreateUserDto) {
-    //TODO: move to brypt service
-    const passwordHash = await bcrypt.hash(dto.password, 10);
+    const userWithTheSameLogin = await this.usersRepository.findByLogin(
+      dto.login,
+    );
+    if (userWithTheSameLogin) {
+      throw BadRequestDomainException.create(
+        'User with the same login already exists',
+        'login',
+      );
+    }
+
+    const userWithTheSameEmail = await this.usersRepository.findByEmail(
+      dto.email,
+    );
+    if (userWithTheSameEmail) {
+      throw BadRequestDomainException.create(
+        'User with the same email already exists',
+        'email',
+      );
+    }
+
+    const passwordHash = await this.cryptoService.createPasswordHash(
+      dto.password,
+    );
 
     const user = this.UserModel.createInstance({
       email: dto.email,
       login: dto.login,
-      passwordHash: passwordHash,
+      passwordHash,
     });
 
-    await this.usersRepository.save(user);
+    try {
+      await this.usersRepository.save(user);
+    } catch (error) {
+      if (error.code === 11000) {
+        throw BadRequestDomainException.create(
+          'Duplicate login or email',
+          'id',
+        );
+      }
+      throw error; // если ошибка не связана с уникальностью, выбрасываем дальше
+    }
 
-    return user._id.toString();
+    return user._id;
   }
 
   async deleteUser(id: string) {
