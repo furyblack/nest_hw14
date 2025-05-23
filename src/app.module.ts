@@ -6,6 +6,7 @@ import { UserAccountsModule } from './moduls/user-accounts/user-accounts.module'
 import { TestingModule } from './moduls/testing/testing.module';
 import { BloggersPlatformModule } from './moduls/bloggers-platform/bloggers-platform.module';
 import { CoreModule } from './core/core.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -14,6 +15,12 @@ import { CoreModule } from './core/core.module';
     TestingModule,
     BloggersPlatformModule,
     CoreModule,
+    ThrottlerModule.forRoot([
+      {
+        ttl: 10000,
+        limit: 5,
+      },
+    ]),
   ],
   controllers: [AppController],
   providers: [AppService],
