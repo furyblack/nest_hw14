@@ -1,3 +1,4 @@
+import { configModule } from './dynamic-config-module';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -10,6 +11,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
+    configModule,
     MongooseModule.forRoot('mongodb://localhost/nest'),
     UserAccountsModule,
     TestingModule,
