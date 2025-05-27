@@ -52,6 +52,7 @@ describe('users', () => {
     const users = await userTestManger.createSeveralUsers(12);
     const { body: responseBody } = (await request(app.getHttpServer())
       .get(`/api/users?pageNumber=2&sortDirection=asc`)
+      .auth('admin', 'qwerty')
       .expect(HttpStatus.OK)) as { body: PaginatedViewDto<UserViewDto> };
 
     expect(responseBody.totalCount).toBe(12);

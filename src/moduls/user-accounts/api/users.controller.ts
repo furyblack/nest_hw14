@@ -19,6 +19,7 @@ import { GetUsersQueryParams } from './input-dto/get-users-query-params.input-dt
 import { PaginatedViewDto } from '../../../core/dto/base.paginated.view-dto';
 import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
 import { ApiBasicAuth } from '@nestjs/swagger';
+import { Public } from '../guards/decorators/public.decorators';
 
 @Controller('users')
 @UseGuards(BasicAuthGuard)
@@ -34,6 +35,7 @@ export class UsersController {
     return this.usersQueryRepository.getByIdOrNotFoundFail(id);
   }
 
+  @Public()
   @Get()
   async getAll(
     @Query() query: GetUsersQueryParams,
